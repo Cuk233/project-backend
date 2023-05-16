@@ -20,25 +20,21 @@ const ProfileControllers = {
       // Cari user berdasarkan ID
 
       // Cari user profile berdasarkan ID user
-      const user_profile = await User_profile.findOne({
-        where: { user_id },
-        raw: true,
-        include: {
-          model: User,
-          attributes: ["username"],
-          as: "username",
-        },
+
+      // Mengambil data user dengan kolom yang ditentukan
+      const user = await User.findOne({
+        where: { id: user_id },
+        attributes: ["username", "fullname", "bio", "profile_pic"],
       });
 
-      if (!user_profile) {
-        return res.status(404).json({ message: "User profile not found" });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
       }
 
-      // Mengembalikan data user profile
-      return res.status(200).json({ user_profile });
+      return res.status(200).json({ user });
     } catch (error) {
-      console.log(error);
-      return res.status(500).json({ message: "Server error" });
+      console.error(error);
+      return res.status(500).json({ message: "Internal server error" });
     }
   },
 
@@ -54,25 +50,49 @@ const ProfileControllers = {
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-
-      // Cari atau buat user profile berdasarkan ID user
-      let user_profile = await User_profile.findOne({ where: { userId } });
-
-      if (!user_profile) {
-        // Jika user profile belum ada, buat baru
-        user_profile = await User_profile.create({ userId, bio, profilePic });
-      } else {
-        // Jika user profile sudah ada, update data
-        user_profile.bio = bio;
-        user_profile.profilePic = profilePic;
-        await user_profile.save();
-      }
+      // Jika user profile sudah ada, update data
+      user.bio = bio;
+      user.profilePic = profilePic;
+      await user.save();
 
       // Mengembalikan data user profile yang telah diupdate
       return res.status(200).json({ user_profile });
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: "Server error" });
+    }
+  },
+
+  editProfile: async (req, res) => {
+    try {
+      const { fullname, bio } = req.body;
+      const userId = req.user.id; // Mengambil id pengguna dari token otentikasi
+
+      // Mengambil data user_profile yang sesuai dengan user_id
+      let user = await User.findOne({
+        where: { id: userId },
+      });
+
+      if (!user) {
+        return res.status(404).json({ message: "User profile not found" });
+      }
+
+      // Mengupdate fullname dan bio
+      user.fullname = fullname;
+      user.bio = bio;
+
+      // Jika ada file gambar diunggah, mengupdate profile_pic
+      if (req.file) {
+        user.profile_pic = req.file.filename;
+      }
+
+      // Menyimpan perubahan pada user_profile
+      await user.save();
+
+      return res.status(200).json({ message: "Profile updated successfully" });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Internal server error" });
     }
   },
 };

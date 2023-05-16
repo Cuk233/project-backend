@@ -20,10 +20,5 @@ const User_profile = (sequelize) => {
     },
   });
 };
-User_profile.associate = (models) => {
-  User_profile.belongsTo(models.User, {
-    foreignKey: "user_id",
-    as: "Profile", // Gunakan alias "Profile" sebagai nama asosiasi yang sama
-  });
-};
+
 module.exports = User_profile;

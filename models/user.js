@@ -15,16 +15,24 @@ const User = (sequelize) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    fullname: {
+      type: DataTypes.STRING,
+    },
+    bio: {
+      type: DataTypes.STRING,
+    },
+    profile_pic: {
+      type: DataTypes.STRING,
+      defaultValue: "default.jpg",
+    },
   });
   User.associate = (models) => {
-    User.hasMany(models.User_profile, {
-      foreignKey: "user_id",
-      as: "Profile",
-    });
-    User.hasOne(models.User_profile, {
-      foreignKey: "user_id",
+    User.hasMany(models.content, {
+      foreignKey: "User_id",
+      as: "user", // Menambahkan alias "contents"
     });
   };
+
   return User;
 };
 module.exports = User;
